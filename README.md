@@ -1,73 +1,77 @@
 # Declarative argparse for Python
 
-The `argparse` module, is, in fact, declarative, but "declaring" the arguments
-are done in Python. All that declaration needs to be repeated when the developer
-wants to provide alternative ways of providing the value of an argument, e.g.
-through a configuration file or environment variables.
+The `argparse` module, is, in fact, declarative, but the declaration of the
+arguments is done in Python. All that declaration needs to be repeated when the
+developer wants to provide alternative ways of providing the value of an
+argument, e.g. through a configuration file or environment variables.
 
-Wouldn't it be great if we had a single source of truth?
+Wouldn't it be great if we had a single source of truth? For example:
 
 ```yaml
 arg-defs:
-- name: --option
-    action: store
-    default: null
-    type: str
-    required: false
-    help: "Path to the configuration file"
 - name: positional
-    type: str
-    help: "Positional argument"
-    default: null
+  type: str
+  help: "Positional argument"
+  default: 'Some cool default value'
+- name: --option
+  action: store
+  default: False
+  type: str
+  required: false
+  help: "Path to the configuration file"
 ```
 
 And from that, we derive all the necessary information?
 
-In our Python code we just need to read this file to build an
+## Uncluttered source code
+
+In our Python code we just need to read this file to build an `ArgumentParser`.
+We're actually building a `Declargs` class, which simple inherits from
 `ArgumentParser`:
 
 ```python
 import declargs
+import yaml
 
 def main():
-    args = declargs.parse()
+    with open('schema', 'r') as f:
+        schema = yaml.safe_load(f)
+
+    parser = declargs.Declargs(schema)
+
+    args = parser.parse_args()
 ```
 
-And the user can call your program like this:
+It is nice to not have to call `parser.add_argument` over and over, but the real
+power of Declargs comes from the ability to override defaults.
 
-```sh
-$ my-program --option value positional-value
-```
+## Overriding defaults
 
-like this:
+Programs usually provide a few ways of overriding defaults:
 
-```sh
-$ MY_PROGRAM_OPTION=value my-program
-```
+- Configuration files: these can be static, for example `~/.config/my-app/config`
+  or location specific, like a `.my-app` file located in the user's current
+  directory.
+- Environment variables
 
-or even like this
-
-`config.yaml`
-```
-option: value
-```
-
-```
-$ my-program
-```
-
-## Configuration files
+Declargs aims to _automatically_ provide the user of your app with the ability
+to override defaults using these methods.
 
 ### Static configuration files
-#not-implemented
 
-If the user always uses `--option value`, you can allow them to create static
-configuration files:
+If the user always uses `--option value`, they could define them in a
+configuration file that lives in a known (static) location, e.g.
+`~/.config/my-app/config.yaml`
+
+You, as the app developer, can define that location in the schema file:
 
 ```yaml
-static-config:
-- ~/.config/my-program/config.yaml
-- /etc/my-program/config.yaml
+config:
+  static_configs:
+    - path: /etc/my-app/config.yaml
+      required: true
+    - path: ./tests/resources/dummy-config.yaml
+      required: true
 
 args-defs:
 - name: --option
@@ -75,8 +79,8 @@ args-defs:
 ```
 
 With that in place, the user **may** create the files
-`~/.config/my-program/config.yaml`, and/or `/etc/my-program/config.yaml`
-containing:
+`~/.config/my-program/config.yaml`, and/or `/etc/my-app/config.yaml`
+containing the new desired default value for the option:
 
 ```yaml
 option: value
@@ -85,24 +89,20 @@ option: value
 If both configuration files are defined, the last one defined takes precedence.
 
 ### Local-scope configuration files
-#not-implemented
 
-You can also allow your user to define custom behaviour depending on their
+You can also allow your user to define custom behavior depending on their
 current location in the file system by adding the following to the schema:
 
 ```yaml
-static-config:
-- ~/.config/my-program/config.yaml
-- /etc/my-program/config.yaml
-
-local-config: .my-program
+config:
+  local_config: .my-app.yaml
 
 args-defs:
 - name: --option
 ...
 ```
 
-So the user can create a file called `.my-program` anywhere they wish in their
+So the user can create a file called `.my-app.yaml` anywhere they wish in their
 file system, and any values it defines, take precedence over the static
 configuration.
 
@@ -112,56 +112,29 @@ And the local-scope configuration cascade like this:
 /
     home/
         user/
-            .my-program
+            .my-app.yaml
             program/
-                .my-program
+                .my-app.yaml
                 sub-folder/
-                    .my-program
+                    .my-yaml
 ```
 
-So if the user is inside `/home/user/prgram/sub-folder`, declargs will find 3
+So if the user is inside `/home/user/program/sub-folder`, Declargs will find 3
 local-scope configuration files:
 
 1. `/home/user/.my-program`
 2. `/home/user/program/.my-program`
 3. `/home/user/program/sub-folder/.my-program`
 
-They are read in this order, and the last one overrides the previous ones.
+They are read in this order, and the last one is the only one taken into
+consideration
 
 ## Environment variable overrides
 #not-implemented
 
-The last way you can allow your users to configure the application is via
-environment variables. Environment variables take precedence over any
-configuration file, but can be overriden by providing a cli argument directly.
-
-```yaml
-static-config:
-- ~/.config/my-program/config.yaml
-- /etc/my-program/config.yaml
-
-local-config: .my-program
-
-environment-prefix: MY_PROGRAM
-
-args-defs:
-- name: --option
-...
-```
-
-Environment variables take the following form:
-
-```
-<environment-prefix>(_<subparser>)*_<option>
-```
-
-There is an open question on how to encode lists and other data structures in
-an environment variable so that it fully integrates with argparse.
-
-Going further, we could provide a mini-syntax for environment variable naming.
-
-
-## Hooks
+Now that we have a single source of truth for the configuration items of our
+app, it would be a shame to not be able to override them with environment
+variables. This will be implemented soon.
 
 ## Type coertion
 
@@ -170,4 +143,4 @@ to the appropriate type can prevent problems in the future. Pydantic-style
 validation would be a plus. Maybe this library should be able to interface with
 Pydantic nicely so people can use their data structures as `BaseModel`s. Feels
 like this is a bit of an overengineering, but essential to the _coolness factor_
-of the project.
+of the project. Might be implemented.
