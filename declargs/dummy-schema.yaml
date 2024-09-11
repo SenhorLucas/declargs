@@ -1,0 +1,66 @@
+defaults-config: dummy-config.yaml
+local-config: .app-name
+static-config:
+  - dummy-config.yaml
+  - /home/user/.app-name/config.yml
+
+environment-prefix: APP_NAME
+
+parser:
+  # prog: app-name
+  # usage: "app-name [options] positional {command1,command2} [command-options]"
+  # description: "Description of the application"
+  # epilog: "Epilog of the application"
+  # parents: []
+  # formatter-class: argparse.RawDescriptionHelpFormatter
+  # prefix-chars: null
+  # fromfile-prefix-chars: null
+  # argument-default: null
+  # conflict-handler: null
+  # add-help: true
+  # allow-abbrev: true
+  # exit-on-error: true
+
+  arg-defs:
+    - names: [pos]
+      # type: str
+      nargs: '?'
+      help: "Positional argument"
+      # default: null
+    - names: [--config, -c]
+      action: store_true
+      # nargs: null
+      # const: null
+      # default: null
+      # type: str
+      # choices: ['config.yml']
+      # required: false
+      help: "Path to the configuration file"
+      # metavar: null
+      # dest: null
+# Not implemented
+#   subparsers:
+#     - name: command1
+#       help: "Command to execute"
+#       args:
+#         - name: --option
+#           type: str
+#           help: "Option to pass to the command"
+#           default: null
+#     - name: command2
+#       help: "Command to execute"
+#       args:
+#         - name: --option
+#           type: str
+#           help: "Option to pass to the command"
+#           default: null
+
+# Not implemented
+# non-args:
+#   - name: --version
+#     action: version
+#     version: "1.0.0"
+#     help: "Show the version number and exit"
+#   - name: --help
+#     action: help
+#     help: "Show this help message and exit"

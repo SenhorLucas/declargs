@@ -1,0 +1,45 @@
+local-config: .app-name
+static-config:
+  - path: /etc/app-name/config.yml
+  - path: /home/user/.app-name/config.yml
+
+parser:
+  prog: app-name
+  usage: "app-name [options] positional {command1,command2} [command-options]"
+  description: "Description of the application"
+  epilog: "Epilog of the application"
+  parents: []
+  formatter-class: argparse.RawDescriptionHelpFormatter
+  prefix-chars: null
+  fromfile-prefix-chars: null
+  argument-default: null
+  conflict-handler: null
+  add-help: true
+  allow-abbrev: true
+  exit-on-error: true
+
+  args:
+    - name: --config
+      type: str
+      help: "Path to the configuration file"
+      default: null
+    - name: positional
+      type: str
+      help: "Positional argument"
+      default: null
+  subparsers:
+    - name: command1
+      help: "Command to execute"
+      args:
+        - name: --option
+          type: str
+          help: "Option to pass to the command"
+          default: null
+    - name: command2
+      help: "Command to execute"
+      args:
+        - name: --option
+          type: str
+          help: "Option to pass to the command"
+          default: null
+

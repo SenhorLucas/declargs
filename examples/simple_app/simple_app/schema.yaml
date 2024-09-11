@@ -1,0 +1,17 @@
+config:
+  local_config: .simple-app
+  static_configs:
+    - path: ./tests/resources/dummy-config.yaml
+      required: true
+
+argument_parser:
+  prog: simple-app
+  description: "An app that echoes its arguments"
+
+  arg_defs:
+    - names: [positional]
+      help: "Positional argument"
+      default: 'Random default'
+    - names: [--some-kwarg, -s]
+      action: store_true
+      help: "True if some kwarg is set"

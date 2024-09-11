@@ -1,0 +1,18 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "simple-app"
+description = "An app that does nothing"
+version = "0.1.0"  # REQUIRED, although can be dynamic
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [ {name = "Lucas Viana", email = "lucas.nviana@gmail.com" } ]
+maintainers = [ {name = "Lucas Viana", email = "lucas.nviana@gmail.com" } ]
+dependencies = [
+    "declargs @ file:../..",
+]
+
+[project.scripts]
+simple_app = "simple_app:run"

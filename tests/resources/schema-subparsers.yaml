@@ -1,0 +1,68 @@
+config:
+  local_config: .app-name
+  environment_prefix: APP_NAME
+  static_configs:
+    - path: tests/resources/config-subparsers.yaml
+      required: true
+    #- path: '{CONFIG_HOME}/app-name/config.yml'
+    #  required: false
+
+argument_parser:
+  # Testing for all arguments to `ArgumentParser` would not test `Declargs`
+  # itself better, so I'll leave most options commented out.
+  prog: app-name
+  # usage: "app-name [options] positional {command1,command2} [command-options]"
+  description: "Description of the application"
+  # epilog: "Epilog of the application"
+  # parents: []  # TODO: Parents might be tricky to implement
+  # formatter-class: argparse.RawDescriptionHelpFormatter
+  # prefix-chars: null
+  # fromfile-prefix-chars: null
+  # argument-default: null
+  # conflict-handler: null
+  # add-help: true
+  # allow-abbrev: true
+  # exit_on_error: true
+
+  arg_defs:
+    - names: [--some-kwarg, -s]
+      action: store_true  #  Another test needs to make sure that custom actions work.
+      # nargs: null
+      # const: null
+      # default: null
+      # type: str
+      # choices: ['config.yml']
+      # required: false
+      help: "Path to the configuration file"
+      # metavar: null
+      # dest: null
+  subparsers:  # `add_subparser`
+    title: "Usually ommitted title"
+    description: "Usually omitted description"
+    parsers:  # `subparser.add_parser`
+      - name: sub-command-a
+        help: "This is a sub-command-a help"
+        arg_defs:
+          - names: [sub_command_positional]
+            help: "Positional argument for the sub-command-a"
+            nargs: '?'
+            default: 'Random default a'
+          - names: [--sub-command-a-kwarg, -s]
+            action: store_true
+            help: Subcommand A kwarg help
+      - name: sub-command-b
+        help: This is a sub-command-b help
+        arg_defs:
+          - names: [sub_command_positional]
+            help: Positional argument for the sub-command-a
+            default: 'Random default b'
+          - names: [--sub-command-a-kwarg, -s]
+            action: store_true
+            help: Subcommand B kwarg help
+
+parent_parsers:
+  description: "Parent parser description"
+  arg_defs:
+    - names: [--parent-kwarg, -p]
+      action: store_true
+      help: "Path to the configuration file for the parent parser"

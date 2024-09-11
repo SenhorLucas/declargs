@@ -1,0 +1,7 @@
+some_kwarg: true
+sub-command-a:
+  sub_command_positional: "Override default a"
+  sub_command_a_kwarg: true
+sub-command-b:
+  sub_command_positional: "Override default b"
+  sub_command_a_kwarg: true
